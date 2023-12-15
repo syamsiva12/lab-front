@@ -102,9 +102,11 @@ def index():
                 if any(status == 'UP' for status in tag_data.values()):
                     field.status = 'UP'
                     up_devices_count += 1
-                else:
+                elif any(status == 'DOWN' for status in tag_data.values()):
                     field.status = 'DOWN'
                     down_devices_count += 1
+                else:
+                    field.status = 'UNRECOGNIZED'
 
         # Commit the changes to the database
         db.session.commit()
@@ -121,7 +123,6 @@ def index():
                                down_devices_count=down_devices_count)
     except Exception as e:
         return f"Error: {str(e)}"
-
 
 # Route to handle adding a new field to the UI and the first database
 @app.route('/add_fields', methods=['POST'])
