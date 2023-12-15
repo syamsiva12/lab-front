@@ -1,0 +1,20 @@
+{
+  "SAMPLE-DUT": {
+    "eth0": "yes",
+    "eth1": "yes"
+  },
+  "Sample-Dut-2": {
+    "eth0": "yes",
+    "eth1": "yes"
+  },
+  "LAN-DEVICE": {
+    "eth0": "yes",
+    "eth1": "yes",
+    "eth2": "yes"
+  },
+  "HA-DUT": {
+    "eth0": "yes",
+    "eth1": "yes",
+    "eth2": "yes"
+  }
+}

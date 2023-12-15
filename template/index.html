@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Network Troubleshooter Tool</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>LAB MANAGER TOOL</h1>
+        <a href="https://thinkpalm.com/" target="_blank">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo">
+        </a>
+
+    </div>
+    <div>
+        <!-- Button trigger modal for Add Fields -->
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addFieldsModal">
+             &plus;
+        </button>
+
+        <!-- Button trigger modal for Import File -->
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#importFileModal">
+            Import File
+        </button>
+
+        <div class="logout-container ml-auto float-right">
+        <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+         </div>
+
+    </div>
+
+    <!-- Form for deleting selected fields -->
+    <form>
+        <table class="table">
+            <!-- Display Fields in a Table -->
+            <thead>
+                <tr>
+                    <th scope="col">Status</th>
+                    <th scope="col">Tags</th>
+                    <th scope="col">Devices</th>
+                    <th>Action</th>
+                   <!-- <th scope="col">Additional Info</th>  New column for additional info -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for tag, tag_data in fields_data.items() %}
+                    <tr>
+                        <td>
+                            {% if 'UP' in tag_data.values() %}
+                                <span class="badge badge-success">Up</span>
+                            {% else %}
+                                <span class="badge badge-danger">Down</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ tag }}</td>
+                        <td>{% for ip, status in tag_data.items() %}{{ ip }}:{{ status }}<br>{% endfor %}</td>
+                        <!-- Add other columns as needed -->
+                        <td>
+                            <form action="{{ url_for('connect_page') }}" method="get" target="_blank">
+                                <button type="submit" class="btn btn-primary" data-toggle="modal">Dive-in</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </form>
+</div>
+
+<!-- Add and Import Modals -->
+{% include 'add_import_modal.html' %}
+
+<!-- Bootstrap JS and Popper.js -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</body>
+</html>

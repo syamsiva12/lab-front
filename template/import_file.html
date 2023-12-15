@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Import File</title>
+    <!-- ... (your head content) ... -->
+</head>
+<body>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Import File</h1>
+    </div>
+    <!-- Your import file form goes here -->
+    <form action="{{ url_for('import_file') }}" method="post">
+        <!-- Your import form fields here -->
+        <input type="file" name="file" accept=".csv, .xlsx">
+        <button type="submit">Import</button>
+    </form>
+
+    <!-- Display Fields (optional) -->
+    <div>
+        <!-- Display your fields here -->
+        <!-- Assuming you want to display something here -->
+    </div>
+</div>
+
+</body>
+</html>

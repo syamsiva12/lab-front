@@ -1,0 +1,94 @@
+/* Add your custom CSS styles here */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+.dashboard-container {
+    max-width: 100%;
+    margin: 20px auto;
+    padding: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.dashboard-header {
+    position: relative;
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px 5px 0 0;
+}
+
+.logo {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 70px; /* Adjust the width as needed */
+    height: 50px;
+    border: 2px solid #fff; /* Add a white border around the logo */
+    border-radius: 20%; /* Make the logo a circle */
+    cursor: pointer; /* Add a pointer cursor to indicate it's clickable */
+    transition: transform 0.3s ease-in-out; /* Add a smooth transition effect */
+}
+
+.logo:hover {
+    transform: scale(1.1); /* Zoom in slightly when hovered */
+}
+
+.dashboard-container h1 {
+    font-size: 40px;
+}
+
+.dashboard-container div {
+    margin-top: 10px;
+}
+
+/* Customize Bootstrap modal style */
+.modal {
+    overflow-y: auto;
+}
+
+.modal-dialog {
+    max-width: 80%;
+}
+
+.modal-content {
+    padding:10px;
+    border-radius: 10px;
+}
+
+/* Customize Bootstrap button style */
+.btn {
+    margin: 5px;
+}
+
+
+/* Plus icon styling */
+.btn-plus {
+    font-size: 24px;
+    line-height: 1;
+}
+
+/* Add this to your CSS file to style the link-button */
+.link-button {
+    background: none;
+    border: none;
+    color: #007bff; /* Link color */
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+}
+
+.link-button:hover {
+    color: #0056b3; /* Hover color */
+}
+
+.table{
+
+    padding: 10px;
+}

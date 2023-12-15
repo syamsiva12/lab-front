@@ -1,0 +1,62 @@
+<!-- Add Fields Modal -->
+<!-- Add Fields Modal -->
+    <div class="modal" id="addFieldsModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Fields</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Add your form fields here -->
+                    <form action="{{ url_for('add_fields')}}" method="post">
+                        <div class="form-group">
+                            <label for="ip">IP:</label>
+                            <input type="text" class="form-control" id="ip" name="ip" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="mac">MAC:</label>
+                            <input type="text" class="form-control" id="mac" name="mac" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="tag">Tag:</label>
+                            <input type="text" class="form-control" id="tag" name="tag" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Fields</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Import File Modal -->
+<div class="modal fade" id="importFileModal" tabindex="-1" role="dialog" aria-labelledby="importFileModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importFileModalLabel">Import File</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Your import file form goes here -->
+                <form action="{{ url_for('import_file') }}" method="post">
+                    <!-- Your import form fields here -->
+                    <input type="file" name="file" accept=".csv, .xlsx">
+                    <button type="submit" class="btn btn-primary">Import</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
