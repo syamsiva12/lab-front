@@ -5,126 +5,224 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Manager - Admin Panel</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="./static/samp.css">
-    <title>Admin Panel</title>
+    <style>
+        /* Add any custom styles here */
+        .container-fluid {
+            padding: 0;
+        }
+
+        .side-menu {
+            background-color: #f8f9fa;
+            padding: 20px;
+            height: 100vh;
+            position: fixed;
+        }
+
+        .brand-name h1 {
+            margin-bottom: 0;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .search input {
+            margin-right: 10px;
+        }
+
+        .user button {
+            margin-right: 10px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            flex: 1;
+            margin: 10px;
+            text-align: center;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        .icon-case img {
+            max-width: 50px;
+            max-height: 50px;
+        }
+
+        .content-2 {
+            margin-top: 20px;
+        }
+
+        .title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+        .recent-payments table {
+            width: 100%;
+        }
+
+        .recent-payments th,
+        .recent-payments td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .recent-payments th {
+            background-color: #f8f9fa;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="side-menu">
-        <div class="brand-name">
-            <h1>LAB MANAGER</h1>
-        </div>
-        <ul>
-            <li><img src="./responsive-admin-panel-pink-master/dashboard (2).png" alt="">&nbsp; <span>Dashboard</span>
-            </li>
-            <li><img src="./responsive-admin-panel-pink-master/reading-book (1).png" alt="">&nbsp;<span>User Management</span>
-            </li>
-        </ul>
-    </div>
-    <div class="container">
-        <div class="header">
-            <div class="nav">
-                <div class="search">
-                    <input type="text" placeholder="Search..">
-                    <button type="submit"><img src="./responsive-admin-panel-pink-master/search.png" alt=""></button>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Side Menu -->
+            <div class="col-md-3 side-menu">
+                <div class="brand-name">
+                    <h1>LAB MANAGER</h1>
                 </div>
-                <div class="user">
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addFieldsModal">
-                        &plus;
-                    </button>
-
-                    <!-- Button trigger modal for Import File -->
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#importFileModal">
-                        Import File
-                    </button>
-
-                    <div class="logout-container ml-auto float-right">
-                        <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
-                    </div>
-                </div>
+                <ul>
+                    <li><img src="./responsive-admin-panel-pink-master/dashboard (2).png" alt="">&nbsp; <span>Dashboard</span></li>
+                    <li><img src="./responsive-admin-panel-pink-master/reading-book (1).png" alt="">&nbsp;<span>User Management</span></li>
+                </ul>
             </div>
-        </div>
-        <div class="content">
-            <div class="cards">
-                <div class="card">
-                    <div class="box">
-                        <h1>{{ count_tags }}</h1>
-                        <h3>Number of Tags </h3>
-                    </div>
-                    <div class="icon-case">
-                        <img src="./responsive-admin-panel-pink-master/students.png" alt="">
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="box">
-                        <h1>{{ count_devices }}</h1>
-                        <h3>Number of Devices </h3>
-                    </div>
-                    <div class="icon-case">
-                        <img src="./responsive-admin-panel-pink-master/teachers.png" alt="">
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="box">
-                        <h1>{{ up_devices_count }}</h1>
-                        <h3>No.of Devices are Active </h3>
-                    </div>
-                    <div class="icon-case">
-                        <img src="./responsive-admin-panel-pink-master/schools.png" alt="">
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <!-- Header -->
+                <div class="header">
+                    <div class="nav">
+                        <div class="search">
+                            <input type="text" placeholder="Search..">
+                            <button type="submit"><img src="./responsive-admin-panel-pink-master/search.png" alt=""></button>
+                        </div>
+                        <div class="user">
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addFieldsModal">
+                                &plus; Add Field
+                            </button>
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#importFileModal">
+                                Import File
+                            </button>
+                            <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+                        </div>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="box">
-                        <h1>{{ down_devices_count }}</h1>
-                        <h3>No.of Devices are Down </h3>
-                    </div>
-                    <div class="icon-case">
-                        <img src="./responsive-admin-panel-pink-master/income.png" alt="">
-                    </div>
-                </div>
-            </div>
-            <div class="content-2">
-                <div class="recent-payments">
-                    <div class="title">
-                        <h2>Device Lists</h2>
-                        <a href="#" class="btn">View All</a>
+
+                <!-- Content Section -->
+                <div class="content">
+                    <!-- Stats Cards -->
+                    <div class="cards">
+                        <div class="card">
+                            <div class="box">
+                                <h1>{{ count_tags }}</h1>
+                                <h3>Number of Tags</h3>
+                            </div>
+                            <div class="icon-case">
+                                <img src="./responsive-admin-panel-pink-master/students.png" alt="">
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="box">
+                                <h1>{{ count_devices }}</h1>
+                                <h3>Number of Devices</h3>
+                            </div>
+                            <div class="icon-case">
+                                <img src="./responsive-admin-panel-pink-master/teachers.png" alt="">
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="box">
+                                <h1>{{ up_devices_count }}</h1>
+                                <h3>Active Devices</h3>
+                            </div>
+                            <div class="icon-case">
+                                <img src="./responsive-admin-panel-pink-master/schools.png" alt="">
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="box">
+                                <h1>{{ down_devices_count }}</h1>
+                                <h3>Devices Down</h3>
+                            </div>
+                            <div class="icon-case">
+                                <img src="./responsive-admin-panel-pink-master/income.png" alt="">
+                            </div>
+                        </div>
                     </div>
 
-                    <table>
-                        <!-- Display Fields in a Table -->
-                        <thead>
-                            <tr>
-                                <th scope="col">Status</th>
-                                <th scope="col">Tags</th>
-                                <th scope="col">Devices</th>
-                                <th>Action</th>
-                                <!-- <th scope="col">Additional Info</th> New column for additional info -->
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for field in fields_data %}
-                            <tr>
-                                <td> {% if field.status == 'UP' %}
-                                    <span class="badge badge-success">{{ field.status }}</span>
-                                    {% else %}
-                                    <span class="badge badge-danger">{{ field.status }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ field.tags }}</td>
-                                <td>{{ field.ip }}</td>
+                    <!-- Device List -->
+                    <div class="content-2">
+                        <div class="recent-payments">
+                            <div class="title">
+                                <h2>Device Lists</h2>
+                                <a href="#" class="btn">View All</a>
+                            </div>
 
-                                <td>
-                                    <form action="{{ url_for('connect_page')}}" method="get" target="_blank">
-                                        <button type="submit" class="btn btn-primary" data-toggle="modal">Dive-in</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            <!-- Table for Devices -->
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Tags</th>
+                                        <th>Devices</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for field in fields_data %}
+                                    <tr>
+                                        <td>
+                                            {% if field.status == 'UP' %}
+                                            <span class="badge badge-success">{{ field.status }}</span>
+                                            {% elif field.status == 'DOWN' %}
+                                            <span class="badge badge-danger">{{ field.status }}</span>
+                                            {% else %}
+                                            <span class="badge badge-warning">NULL</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ field.tags }}</td>
+                                        <td>{{ field.ip }}</td>
+                                        <td>
+                                            <form action="{{ url_for('connect_page')}}" method="get" target="_blank">
+                                                <button type="submit" class="btn btn-primary">Dive-in</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
