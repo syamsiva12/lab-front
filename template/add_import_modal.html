@@ -11,18 +11,18 @@
                 </div>
                 <div class="modal-body">
                     <!-- Add your form fields here -->
-                    <form action="{{ url_for('add_fields')}}" method="post">
+                    <form action="{{ url_for('add_fields')}}" method="post" onsubmit="return validateForm()">
                         <div class="form-group">
                             <label for="ip">IP:</label>
                             <input type="text" class="form-control" id="ip" name="ip" required>
                         </div>
                         <div class="form-group">
                             <label for="mac">MAC:</label>
-                            <input type="text" class="form-control" id="mac" name="mac" required>
+                            <input type="text" class="form-control" id="mac" name="mac" required pattern="[0-9A-Fa-f]{2}([-:]?)[0-9A-Fa-f]{2}(\1[0-9A-Fa-f]{2}){4}$" title="Please enter a valid MAC address">
                         </div>
                         <div class="form-group">
                             <label for="tag">Tag:</label>
-                            <input type="text" class="form-control" id="tag" name="tag" required>
+                            <input type="text" class="form-control" id="tags" name="tags" required>
                         </div>
                         <div class="form-group">
                             <label for="username">Username:</label>
@@ -60,3 +60,36 @@
         </div>
     </div>
 </div>
+
+<script>
+    function validateForm() {
+        // Validate MAC address format
+        var macInput = document.getElementById("mac");
+        var macRegex = /^[0-9A-Fa-f]{2}([-:]?)[0-9A-Fa-f]{2}(\1[0-9A-Fa-f]{2}){4}$/;
+        if (!macRegex.test(macInput.value)) {
+            alert("Please enter a valid MAC address.");
+            return false;
+        }
+
+        // You can add additional validation here if needed
+
+        return true;
+    }
+</script>
+
+
+<!-- <script>
+    function validateForm() {
+        // Validate MAC address format
+        var macInput = document.getElementById("mac");
+        var macRegex = /^[0-9A-Fa-f]{2}([-:]?)[0-9A-Fa-f]{2}(\1[0-9A-Fa-f]{2}){4}$/;
+        if (!macRegex.test(macInput.value)) {
+            alert("Please enter a valid MAC address.");
+            return false;
+        }
+
+        // You can add additional validation here if needed
+
+        return true;
+    }
+</script> -->

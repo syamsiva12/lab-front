@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lab Manager - Admin Panel</title>
+    <script src="{{ url_for('static', filename='dash.js') }}"></script>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="./static/samp.css">
@@ -37,6 +38,7 @@
             background-color: #007bff;
             color: #fff;
         }
+        
 
         .search input {
             margin-right: 10px;
@@ -49,41 +51,57 @@
         .content {
             padding: 20px;
         }
-
+/*mo*/
         .cards {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around; /* Adjusted */
+            justify-content: space-around;
+            margin-top: 30px;
         }
-        
+
         .card {
-            flex-basis: calc(25% - 20px); /* Adjusted to 25% to fit four cards in a row */
-            margin: 10px; /* Adjusted margin for spacing */
-            text-align: center;
-            padding: 10px; /* Adjusted padding */
-            border: 1px solid #ddd;
-            border-radius: 5px;
             background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease-in-out;
         }
-        
+
+        .card:hover {
+            transform: scale(1.05);
+        }
         .box {
-            font-size: 16px; /* Adjusted font size */
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #ebeef1;
+            font-size: 2em;
+            margin: 0;
+        }
+
+        h3 {
+            color: #555;
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+        h4 {
+            color: #000000;
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+
+        h5 {
+            color: #02f302;
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+
+        h6 {
+            color: #fc0404;
+            font-size: 1.2em;
+            margin-top: 10px;
         }
         
-        .icon-case img {
-            max-width: 30px; /* Adjusted max-width */
-            max-height: 30px; /* Adjusted max-height */
-        }
-        
-        
-        .box {
-            font-size: 16px; /* Adjusted font size */
-        }
-        
-        .icon-case img {
-            max-width: 30px; /* Adjusted max-width */
-            max-height: 30px; /* Adjusted max-height */
-        }
         
         .content-2 {
             margin-top: 20px;
@@ -96,29 +114,93 @@
             margin-bottom: 20px;
         }
 
+        .recent-payments {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }    
+
         .btn {
+            padding: 10px 15px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
             background-color: #007bff;
             color: #fff;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            border: none;
         }
 
-        .recent-payments table {
+        .btn-success {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            margin-left: 10px;
+        }
+
+        .table {
             width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
 
-        .recent-payments th,
-        .recent-payments td {
-            padding: 10px;
-            border: 1px solid #ddd;
+        th, td {
+            padding: 15px;
+            border: 1px solid #dddddd;
             text-align: left;
         }
 
-        .recent-payments th {
-            background-color: #f8f9fa;
+        th {
+            background-color: #007bff;
+            color: #fff;
         }
+
+        .badge {
+            font-size: 12px;
+            padding: 5px 8px;
+            border-radius: 3px;
+        }
+
+        .badge-success {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .badge-danger {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .badge-warning {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        #loadingMessage {
+            display: none;
+            margin-top: 10px;
+            color: #007bff;
+        }
+
+                
+
+
+
     </style>
+
+
 </head>
 
 <body>
@@ -126,11 +208,11 @@
         <div class="row">
             <!-- Side Menu -->
 
-            <div class="col-md-12"> <!-- Change from col-md-9 to col-md-12 to cover the entire screen -->
+            <div class="col-md-12">
                 <!-- Header -->
                 <div class="header">
                     <div class="nav">
-                        <h1>LAB MANAGER</h1> <!-- New Heading -->
+                        <h1>LAB MANAGER</h1>
                         <div class="user">
                             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addFieldsModal">
                                 &plus; Add Field
@@ -142,46 +224,32 @@
                         </div>
                     </div>
                 </div>
-                <!-- Rest of the content goes here -->
-            </div>
                 <!-- Content Section -->
                 <div class="content">
                     <!-- Stats Cards -->
                     <div class="cards">
                         <div class="card">
                             <div class="box">
-                                <h1>{{ count_tags }}</h1>
-                                <h3>Number of Tags</h3>
+                                <h4>{{ count_devices }}</h4>
+                                <h4>Number of Devices</h4>
                             </div>
                             <div class="icon-case">
-                                <img src="./responsive-admin-panel-pink-master/students.png" alt="">
                             </div>
                         </div>
                         <div class="card">
                             <div class="box">
-                                <h1>{{ count_devices }}</h1>
-                                <h3>Number of Devices</h3>
+                                <h5>{{ up_devices_count }}</h5>
+                                <h4>Active Devices</h4>
                             </div>
                             <div class="icon-case">
-                                <img src="./responsive-admin-panel-pink-master/teachers.png" alt="">
                             </div>
                         </div>
                         <div class="card">
                             <div class="box">
-                                <h1>{{ up_devices_count }}</h1>
-                                <h3>Active Devices</h3>
+                                <h6>{{ down_devices_count }}</h6>
+                                <h4>Devices Down</h4>
                             </div>
                             <div class="icon-case">
-                                <img src="./responsive-admin-panel-pink-master/schools.png" alt="">
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="box">
-                                <h1>{{ down_devices_count }}</h1>
-                                <h3>Devices Down</h3>
-                            </div>
-                            <div class="icon-case">
-                                <img src="./responsive-admin-panel-pink-master/income.png" alt="">
                             </div>
                         </div>
                     </div>
@@ -189,28 +257,33 @@
                     <!-- Device List -->
                     <div class="content-2">
                         <div class="recent-payments">
-                            <div class="search">
-                                <input type="text" placeholder="Search..">
-                                <button type="submit"><img src="./responsive-admin-panel-pink-master/search.png" alt=""></button>
-                            </div>
                             <div class="title">
                                 <h2>Device Lists</h2>
-                                <a href="#" class="btn">View All</a>
-                            </div>
+                                <!-- Add the Trigger button -->
+                                <button id="triggerButton" class="btn btn-primary" onclick="triggerCurlCommand()" style="margin-right: -900px;" onmouseover="startTimer()" onmouseout="clearTimer()">Trigger</button>
+                                <a href="{{ url_for('refresh') }}" >
+                                    <img src="static/refresh.png" alt="Refresh">
+                                </a>
+                                
 
+                            </div>
                             <!-- Table for Devices -->
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Status</th>
                                         <th>Tags</th>
                                         <th>Devices</th>
+                                        <th>MAC Address</th>
+                                        <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for field in fields_data %}
                                     <tr>
+                                        <td>{{ field.tags }}</td>
+                                        <td>{{ field.ip }}</td>
+                                        <td>{{ field.mac }}</td>
                                         <td>
                                             {% if field.status == 'UP' %}
                                             <span class="badge badge-success">{{ field.status }}</span>
@@ -219,14 +292,16 @@
                                             {% else %}
                                             <span class="badge badge-warning">NULL</span>
                                             {% endif %}
-                                        </td>
-                                        <td>{{ field.tags }}</td>
-                                        <td>{{ field.ip }}</td>
+                                        </td>      
+                                        <div id="loadingMessage" style="display: none;">
+                                            Loading... Please wait.
+                                        </div>                                
                                         <td>
-                                            <form action="{{ url_for('connect_page')}}" method="get" target="_blank">
+                                            <form action="{{ url_for('connect_page', tag=field.tags) }}" method="get" target="_blank">
                                                 <button type="submit" class="btn btn-primary">Dive-in</button>
                                             </form>
                                         </td>
+                                        
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -237,6 +312,60 @@
             </div>
         </div>
     </div>
+    <!-- Add this script at the end of your HTML body -->
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Check if the page has a pop-up message and show it
+        var errorMessage = '{{ get_flashed_messages(with_categories=true) | first | last }}';
+        if (errorMessage) {
+            alert(errorMessage);
+        }
+    });
+</script>
+
+<script>
+    function validateForm() {
+        // Your existing form validation logic
+    }
+
+    function triggerCurlCommand() {
+        const url = 'http://192.168.101.156:8000/start_trigger';
+        const curlParams = {
+            key: 'value',
+        };
+    
+        // Invoke the POST request using JavaScript fetch
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',  // Corrected the typo here
+            },
+            body: JSON.stringify(curlParams),
+        })
+        .then(response => {
+            if (response.ok && response.status === 200) {
+                window.alert('TRIGGERED SUCCESSFULLY');
+            } else {
+                window.alert('ERROR WHILE POSTING');
+            }
+        })
+        .catch(error => {
+            console.error('Error sending POST request:', error);
+            window.alert('Error sending POST request: ' + error.message);
+        });
+    }
+       
+
+</script>
+
+<script>
+    function routeToPage(tag) {
+        // Modify the form's action URL with the specific tag
+        document.getElementById("connectForm").action = "{{ url_for('connect_page', tag='') }}" + tag;
+        return true; // Continue with form submission
+    }
+</script>
 
     <!-- Add and Import Modals -->
     {% include 'add_import_modal.html' %}

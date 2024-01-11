@@ -1,6 +1,16 @@
-from flask import Flask, render_template, request, redirect, url_for , jsonify,flash
+from asyncio.windows_events import NULL
+from flask import Flask, render_template, request, redirect, url_for , jsonify,flash,session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
+from sqlalchemy.exc import IntegrityError
+from flask_cors import CORS
+from flask_socketio import SocketIO, emit
+import subprocess, platform
+import paramiko
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+import mysql.connector
 import json
 
 import requests
@@ -8,6 +18,8 @@ import requests
 import webbrowser
 
 app = Flask(__name__, template_folder='template')
+CORS(app)
+socketio = SocketIO(app)
 
 # Configuration for the first and second databases
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:password@192.168.109.137:3306/DEVICE_TRACKER'
@@ -39,7 +51,7 @@ class User(db.Model, UserMixin):
 class Field(db.Model):
     id = db.Column(db.Integer, primary_key=True , autoincrement=True)
     ip = db.Column(db.String(15), unique=True, nullable=False)
-    tags = db.Column(db.String(50))
+    tags = db.Column(db.String(200), nullable=False)
     mac = db.Column(db.String(50), unique=True, nullable=False)
     username = db.Column(db.String(17))
     password = db.Column(db.String(50))
@@ -50,7 +62,7 @@ class DeviceInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ip = db.Column(db.String(15), unique=True, nullable=False)
     status = db.Column(db.String(20))
-    tags = db.Column(db.String(20))
+    tags = db.Column(db.String(20), nullable=False)
 
 # Creation of the database tables within the application context.
 with app.app_context():
@@ -128,23 +140,24 @@ def index():
 @app.route('/add_fields', methods=['POST'])
 def add_fields():
     ip_address = request.form.get('ip')
-    tags = request.form.get('tags')
+    tags_data = request.form.get('tags')
     mac = request.form.get('mac')
     username = request.form.get('username')
     password = request.form.get('password')
 
-    new_field = Field(ip=ip_address, tags=tags, mac=mac, username=username, password=password)
+    try:
+        new_field = Field(ip=ip_address, tags=tags_data, mac=mac, username=username, password=password)
 
-    # Add the new field to the first database
-    db.session.add(new_field)
-    db.session.commit()
+        # Add the new field to the first database
+        db.session.add(new_field)
+        db.session.commit()
 
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({'error': 'Duplicate MAC address'})
 
-    # Fetch all fields data after the addition
-    fields_data = Field.query.all()
-
-    return render_template('dash.html', fields_data=fields_data )
-
+    # Redirect to the index route after successfully adding a new field
+    return redirect(url_for('index'))
 
 @app.route('/import')
 def import_file():
@@ -222,22 +235,97 @@ def write_to_file(filename, data):
         print(f"Error writing to {filename}: {str(e)}")
 
 
-@app.route('/connect_page', methods=['GET'])
-def connect_page():
+@app.route('/connect_page/<tag>', methods=['GET', 'POST'])
+def connect_page(tag):
     if request.method == 'GET':
+        result_of_status = {}
         try:
+            device_tag = session.get('device_tag')
             with open('data1.txt', 'r') as file:
-                data1 = json.load(file)
+                data1 = json.load(file)               
             with open('data2.txt', 'r') as file:
                 data2 = json.load(file)
             with open('data3.txt', 'r') as file:
                 data3 = json.load(file)
 
-            return render_template('connect_page.html', data1=data1, data2=data2, data3=data3)
+            return render_template('connect_page.html',tag=tag, data1=data1[tag],data2=data2[tag],data3=data3[tag])
         except Exception as e:
             return f"Error: {str(e)}"
-    else:
-        return "Method Not Allowed"
+    elif request.method == 'POST':
+        session['device_tag'] = tag
+        return jsonify(result="Success", reload=True)
+                
+@app.route('/refresh', methods=['GET'])
+def refresh():
+    return redirect(url_for('index'))
+
+# Handle SSH
+@app.route('/simulated_terminal/<tag>')
+def simulated_terminal(tag):
+    Base = declarative_base()
+    class Field(Base):
+        __tablename__ = 'field'
+        id = Column(Integer, primary_key=True)
+        tags = Column(String)
+        ip = Column(String)
+        ip2 = Column(String)
+        ip3 = Column(String)
+        username = Column(String)
+        password = Column(String)
+    def sql_connect():
+        host = '192.168.109.137'
+        port = 3306
+        user = "root"
+        password = "password"
+        database = "DEVICE_TRACKER"
+        connection = mysql.connector.connect(
+        host=host,
+        port=port,
+        user=user,
+        password=password,
+        database=database
+        )
+        return connection
+    def get_ssh_credentials():
+        connection = sql_connect()
+        cursor = connection.cursor()
+
+        try:
+            # Retrieve IP, username, and password from the 'field' table
+            cursor.execute(r"SELECT ip, ip2, ip3, username, password FROM field WHERE tags = %s", (tag,))
+            result = cursor.fetchone()
+
+            return result if result else (None, None, None, None, None)
+        finally:
+            cursor.close()
+            connection.close()
+    ip, ip2, ip3, username, password = get_ssh_credentials()
+
+    for ip in [ip, ip2, ip3]:
+        try:
+            if platform.system().lower() == 'windows':
+                # For Windows, use plink for SSH connections
+                cmd_command = f'plink -batch  -ssh -l {username} -pw {password} -load plink_config.txt {ip}'
+                subprocess.run(['start', 'cmd', '/K', cmd_command], shell=True, check=True)
+            else:
+                # For Ubuntu or other platforms, use paramiko
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(ip, username=username, password=password)
+                ssh.close()
+
+            return redirect(url_for('connect_page', tag=tag))
+
+        except paramiko.AuthenticationException:
+            print(f"Failed to connect to {ip} with username {username} and password {password}. Authentication failed.")
+        except paramiko.SSHException as e:
+            print(f"Failed to connect to {ip}. {str(e)}")
+        except Exception as e:
+            print(f"Error connecting to {ip}: {str(e)}")
+
+    print(f"Unable to establish an SSH connection for tag {tag}")
+    return "Unable to establish an SSH connection", 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

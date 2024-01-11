@@ -12,9 +12,38 @@
     "eth1": "yes",
     "eth2": "yes"
   },
-  "HA-DUT": {
+  "E8K-Manu": {
+    "br1": "yes",
+    "br2": "yes",
+    "br4": "yes",
+    "br5": "yes",
+    "ge1": "yes",
+    "ge2": "no",
+    "ge3": "no",
+    "ge4": "no",
+    "ge5": "yes",
+    "ge6": "no",
+    "ge7": "yes",
+    "ge8": "no",
+    "sfp9": "no",
+    "sfp10": "no"
+  },
+  "MSA": {
+    "eth0": "yes",
+    "eth0.1": "yes",
+    "eth0.1:100": "yes",
+    "eth1": "yes",
+    "eth1:100": "yes",
+    "eth3": "yes",
+    "eth3:100": "yes",
+    "lan2": "yes"
+  },
+  "MSA_PC": {
+    "ens160": "yes"
+  },
+  "HA_DUT-DEV": {
     "eth0": "yes",
     "eth1": "yes",
-    "eth2": "yes"
+    "eth3": "yes"
   }
 }
