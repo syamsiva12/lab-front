@@ -10,6 +10,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="./static/samp.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
         /* Add any custom styles here */
         .container-fluid {
@@ -52,23 +53,32 @@
             padding: 20px;
         }
 /*mo*/
-        .cards {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 30px;
-        }
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 180px;
+        margin-top: 30px;
+        margin-bottom: 80px;
+    }
 
-        .card {
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            transition: transform 0.3s ease-in-out;
-        }
+    .card {
+        background: linear-gradient(to bottom right, #3730b3, #e4435e);
+        border-radius: 25px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease-in-out;
+        height: 160px;
+        width: 250px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
 
-        .card:hover {
-            transform: scale(1.05);
-        }
+    .card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
         .box {
             padding: 20px;
             text-align: center;
@@ -78,30 +88,49 @@
             font-size: 2em;
             margin: 0;
         }
+        h2 {
+            color: #ebeef1;
+        }
 
         h3 {
             color: #555;
             font-size: 1.2em;
             margin-top: 10px;
+            font-weight: bold;
         }
         h4 {
-            color: #000000;
+            color: #140e0e;
             font-size: 1.2em;
             margin-top: 10px;
+            font-weight: bold;
+        }
+        h7 {
+            color: #140e0e;
+            font-size: 1.2em;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 50px;
         }
 
         h5 {
             color: #02f302;
             font-size: 1.2em;
             margin-top: 10px;
+            font-weight: bold;
+            font-size: 50px;
         }
 
         h6 {
             color: #fc0404;
             font-size: 1.2em;
             margin-top: 10px;
+            font-weight: bold;
+            font-size: 50px;
         }
         
+        .form-group {
+            color: #000;
+        }
         
         .content-2 {
             margin-top: 20px;
@@ -158,19 +187,19 @@
 
         th, td {
             padding: 15px;
-            border: 1px solid #dddddd;
+            border: 1px solid #dddddd42;
             text-align: left;
         }
 
         th {
-            background-color: #007bff;
-            color: #fff;
+            background-color: #046bd8;
+            color: #ffffff;
         }
 
         .badge {
-            font-size: 12px;
-            padding: 5px 8px;
-            border-radius: 3px;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
         }
 
         .badge-success {
@@ -203,7 +232,7 @@
 
 </head>
 
-<body>
+<body class="bg-gradient-to-b from-blue-600 to-blue-700 text-white">
     <div class="container-fluid">
         <div class="row">
             <!-- Side Menu -->
@@ -211,15 +240,14 @@
             <div class="col-md-12">
                 <!-- Header -->
                 <div class="header">
-                    <div class="nav">
-                        <h1>LAB MANAGER</h1>
-                        <div class="user">
+                    <div class="nav bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white py-4 px-6 shadow-md">
+                        <h1 class="text-2xl font-semibold">LAB MANAGER</h1>
+                        <div class="user flex items-center space-x-4">
                             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addFieldsModal">
-                                &plus; Add Field
-                            </button>
-                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#importFileModal">
-                                Import File
-                            </button>
+                                &plus; Add Field</button>
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#importFileModal">
+                                    Import File
+                                </button>
                             <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
                         </div>
                     </div>
@@ -230,7 +258,7 @@
                     <div class="cards">
                         <div class="card">
                             <div class="box">
-                                <h4>{{ count_devices }}</h4>
+                                <h7>{{ count_devices }}</h7>
                                 <h4>Number of Devices</h4>
                             </div>
                             <div class="icon-case">
@@ -255,59 +283,51 @@
                     </div>
 
                     <!-- Device List -->
-                    <div class="content-2">
-                        <div class="recent-payments">
-                            <div class="title">
-                                <h2>Device Lists</h2>
-                                <!-- Add the Trigger button -->
+                    <div class="content-2 bg-gradient-to-b from-blue-700 to-blue-800 text-white">
+                        <div class="recent-payments p-8 rounded-lg shadow-lg bg-gradient-to-b from-blue-800 via-blue-1000  text-blue">
+                            <div class="title flex items-center justify-between mb-4">
+                                <h2 class="text-2xl font-semibold">Device Lists</h2>
                                 <button id="triggerButton" class="btn btn-primary" onclick="triggerCurlCommand()" style="margin-right: -900px;" onmouseover="startTimer()" onmouseout="clearTimer()">Trigger</button>
-                                <a href="{{ url_for('refresh') }}" >
-                                    <img src="static/refresh.png" alt="Refresh">
+                                <a href="{{ url_for('refresh') }}" class="ml-4">
+                                    <img src="static/refresh.png" alt="Refresh" class="w-6 h-6">
                                 </a>
-                                
-
                             </div>
-                            <!-- Table for Devices -->
-                            <table class="table">
-                                <thead>
+                            <table class="table w-full bg-white shadow-md rounded-md overflow-hidden">
+                                <thead class="bg-blue-500 text-white">
                                     <tr>
-                                        <th>Tags</th>
-                                        <th>Devices</th>
-                                        <th>MAC Address</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
+                                        <th class="py-2 px-4">Tags</th>
+                                        <th class="py-2 px-4">Devices</th>
+                                        <th class="py-2 px-4">MAC Address</th>
+                                        <th class="py-2 px-4">Status</th>
+                                        <th class="py-2 px-4">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for field in fields_data %}
                                     <tr>
-                                        <td>{{ field.tags }}</td>
-                                        <td>{{ field.ip }}</td>
-                                        <td>{{ field.mac }}</td>
-                                        <td>
+                                        <td class="font-semibold py-2 px-4">{{ field.tags }}</td>
+                                        <td class="py-2 px-4">{{ field.ip }}</td>
+                                        <td class="py-2 px-4">{{ field.mac }}</td>
+                                        <td class="py-2 px-4">
                                             {% if field.status == 'UP' %}
-                                            <span class="badge badge-success">{{ field.status }}</span>
+                                            <span class="badge badge-success bg-green-500 text-white p-1 rounded">{{ field.status }}</span>
                                             {% elif field.status == 'DOWN' %}
-                                            <span class="badge badge-danger">{{ field.status }}</span>
+                                            <span class="badge badge-danger bg-red-500 text-white p-1 rounded">{{ field.status }}</span>
                                             {% else %}
-                                            <span class="badge badge-warning">NULL</span>
+                                            <span class="badge badge-warning bg-yellow-500 text-black p-1 rounded">NULL</span>
                                             {% endif %}
-                                        </td>      
-                                        <div id="loadingMessage" style="display: none;">
-                                            Loading... Please wait.
-                                        </div>                                
-                                        <td>
+                                        </td>
+                                        <td class="py-2 px-4">
                                             <form action="{{ url_for('connect_page', tag=field.tags) }}" method="get" target="_blank">
                                                 <button type="submit" class="btn btn-primary">Dive-in</button>
                                             </form>
                                         </td>
-                                        
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    </div>                    
                 </div>
             </div>
         </div>
