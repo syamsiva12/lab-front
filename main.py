@@ -1,4 +1,5 @@
 from asyncio.windows_events import NULL
+import time
 from flask import Flask, render_template, request, redirect, url_for , jsonify,flash,session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
@@ -12,6 +13,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import mysql.connector
 import json
+from croniter import croniter
 
 import requests
 
@@ -325,6 +327,26 @@ def simulated_terminal(tag):
 
     print(f"Unable to establish an SSH connection for tag {tag}")
     return "Unable to establish an SSH connection", 500
+
+@app.route('/calculate_interval', methods=['POST'])
+def calculate_interval():
+    try:
+        data = request.get_json()
+        cron_expression = data.get('cronExpression', '')
+        print(cron_expression)
+        if(cron_expression=='0 0 0 0 0'):
+            return jsonify({'interval': 'NaN'})
+        now = time.time()
+        next_occurrence = croniter(cron_expression, now).get_next()
+        interval = next_occurrence - now
+        print("Enterval time is ",interval)
+        return jsonify({'interval': interval})
+    except Exception as e:
+        print(f"Failed to convert to interval {e}")
+        return None
+        
+        
+        
 
 
 if __name__ == '__main__':

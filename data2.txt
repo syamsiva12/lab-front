@@ -28,22 +28,7 @@
     "sfp9": "no",
     "sfp10": "no"
   },
-  "MSA": {
-    "eth0": "yes",
-    "eth0.1": "yes",
-    "eth0.1:100": "yes",
-    "eth1": "yes",
-    "eth1:100": "yes",
-    "eth3": "yes",
-    "eth3:100": "yes",
-    "lan2": "yes"
-  },
   "MSA_PC": {
     "ens160": "yes"
-  },
-  "HA_DUT-DEV": {
-    "eth0": "yes",
-    "eth1": "yes",
-    "eth3": "yes"
   }
 }

@@ -223,8 +223,10 @@
             color: #007bff;
         }
 
-                
-
+             
+        .modal-content {
+            color: #030303;
+        }
 
 
     </style>
@@ -287,7 +289,7 @@
                         <div class="recent-payments p-8 rounded-lg shadow-lg bg-gradient-to-b from-blue-800 via-blue-1000  text-blue">
                             <div class="title flex items-center justify-between mb-4">
                                 <h2 class="text-2xl font-semibold">Device Lists</h2>
-                                <button id="triggerButton" class="btn btn-primary" onclick="triggerCurlCommand()" style="margin-right: -900px;" onmouseover="startTimer()" onmouseout="clearTimer()">Trigger</button>
+                                <button id="triggerButton" class="btn btn-primary" onclick="showTriggerOptions()" onmouseover="startTimer()" style="margin-right: -900px;" onmouseout="clearTimer()">Trigger</button>
                                 <a href="{{ url_for('refresh') }}" class="ml-4">
                                     <img src="static/refresh.png" alt="Refresh" class="w-6 h-6">
                                 </a>
@@ -333,6 +335,26 @@
         </div>
     </div>
     <!-- Add this script at the end of your HTML body -->
+    <!-- Model For Trigger -->
+    
+    <script src="https://cdn.jsdelivr.net/npm/cronstrue@1.0.0/dist/cronstrue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cron-parser@4.9.0/lib/parser.min.js"></script>
+    <div id="timeTriggerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeTimeTriggerModal()">&times;</span>
+            <label for="triggerTime">Set Trigger Time</label>
+            <input type="text" id="triggerTime" placeholder="Enter the cron expression">
+            
+            <!-- Add a checkbox to allow users to toggle the trigger -->
+            <label for="toggleTrigger">Toggle Trigger</label>
+            <input type="checkbox" id="toggleTrigger" >
+    
+            <button onclick="scheduleTimeBasedTrigger()">Time-Based Trigger</button>
+            <button onclick="triggerCurlCommand()">Manual Trigger</button>
+        </div>
+    </div>
+
+
 <script>
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -349,11 +371,92 @@
         // Your existing form validation logic
     }
 
+    // Function to show trigger options
+    function showTriggerOptions() {
+        const modal = document.getElementById('timeTriggerModal');
+        modal.style.display = 'block';
+    }
+
+        // Function to close the time-based trigger modal
+    function closeTimeTriggerModal() {
+        const modal = document.getElementById('timeTriggerModal');
+        modal.style.display = 'none';
+    }
+
+    let intervalId;  // Global variable to store the interval ID
+    let isTriggerActive = true;
+    let interval;
+    
+    function scheduleTimeBasedTrigger() {
+        const cronExpression = document.getElementById('triggerTime').value;
+    
+        // Clear the previous interval, if any
+        clearInterval(intervalId);
+    
+        if (isValidCronExpression(cronExpression)) {
+            // Set up an interval to repeatedly trigger the command
+            intervalId = setInterval(() => {
+                fetch('/calculate_interval', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ cronExpression }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const interval = parseFloat(data.interval);  // Convert to float
+                    console.log(interval)
+                    if (!isNaN(interval)) {
+                        if (interval < 1) {
+                            // Execute the command immediately when the interval is less than 1 second
+                            triggerCurlCommandForSchedule();
+                        }
+                    } else {
+                        // Handle the case where the interval is NaN (e.g., error)
+                        window.alert("Time-Based Event is Disabled");
+                        stopInterval(); // Stop the interval
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Handle the case where an error occurred
+                    stopInterval(); // Stop the interval
+                });
+            }, 1000); // Adjust the interval as needed (1 second in this example)
+            
+            // Close the modal (if needed)
+            closeTimeTriggerModal();
+        } else {
+            alert('Please enter a valid cron expression.');
+        }
+    }
+    
+    // Function to stop the interval
+    function stopInterval() {
+        clearInterval(intervalId);
+    }
+
+    
+            
+    function isValidCronExpression(expression) {
+        // Basic regex pattern for cron expressions
+        const cronRegex = /^.+$/;
+
+        // Check if the expression matches the regex
+        return cronRegex.test(expression);
+    }
+
+    function closeTimeTriggerModal() {
+        const modal = document.getElementById('timeTriggerModal');
+        modal.style.display = 'none';
+    }
+
     function triggerCurlCommand() {
         const url = 'http://192.168.101.156:8000/start_trigger';
         const curlParams = {
             key: 'value',
-        };
+    };
     
         // Invoke the POST request using JavaScript fetch
         fetch(url, {
@@ -375,7 +478,27 @@
             window.alert('Error sending POST request: ' + error.message);
         });
     }
+
+    function triggerCurlCommandForSchedule() {
+        const url = 'http://192.168.101.156:8000/start_trigger';
+        const curlParams = {
+            key: 'value',
+    };
+    
+        // Invoke the POST request using JavaScript fetch
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',  // Corrected the typo here
+            },
+            body: JSON.stringify(curlParams),
+        })
+    }
        
+    function toggleTrigger() {
+        const checkbox = document.getElementById('toggleTrigger');
+        isTriggerActive = checkbox.checked;
+    }
 
 </script>
 
