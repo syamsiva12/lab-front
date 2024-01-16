@@ -131,10 +131,13 @@ def index():
         # Calculate counts
         count_tags = len(fields_data)
         count_devices = len(fields_data)
+        up_devices_percentage = up_devices_count/count_devices
+        down_devices_percentage = down_devices_count/count_devices
 
         return render_template('dash.html', fields_data=fields_data, count_tags=count_tags,
                                count_devices=count_devices, up_devices_count=up_devices_count,
-                               down_devices_count=down_devices_count)
+                               down_devices_count=down_devices_count,up_devices_percentage=up_devices_percentage,
+                               down_devices_percentage=down_devices_percentage)
     except Exception as e:
         return f"Error: {str(e)}"
 
