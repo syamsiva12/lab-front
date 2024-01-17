@@ -337,6 +337,30 @@ def start_ssh(data):
             cursor.close()
             connection.close()
 
+    for ip in [ip, ip2, ip3]:
+        try:
+            if platform.system().lower() == 'windows':
+                # For Windows, use plink for SSH connections
+                cmd_command = f'plink   -ssh -l {username} -pw {password} -load plink_config.txt {ip}'
+                subprocess.run(['start', 'cmd', '/K', cmd_command], shell=True, check=True)
+            else:
+                # For Ubuntu or other platforms, use paramiko
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(ip, username=username, password=password)
+                ssh.close()
+
+            return redirect(url_for('connect_page', tag=tag))
+
+        except paramiko.AuthenticationException:
+            print(f"Failed to connect to {ip} with username {username} and password {password}. Authentication failed.")
+        except paramiko.SSHException as e:
+            print(f"Failed to connect to {ip}. {str(e)}")
+        except Exception as e:
+            print(f"Error connecting to {ip}: {str(e)}")
+
+    print(f"Unable to establish an SSH connection for tag {tag}")
+    return "Unable to establish an SSH connection", 500
 
 @app.route('/calculate_interval', methods=['POST'])
 def calculate_interval():
