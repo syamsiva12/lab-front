@@ -310,7 +310,7 @@ def simulated_terminal(tag):
         try:
             if platform.system().lower() == 'windows':
                 # For Windows, use plink for SSH connections
-                cmd_command = f'plink -batch  -ssh -l {username} -pw {password} -load plink_config.txt {ip}'
+                cmd_command = f'plink   -ssh -l {username} -pw {password} -load plink_config.txt {ip}'
                 subprocess.run(['start', 'cmd', '/K', cmd_command], shell=True, check=True)
             else:
                 # For Ubuntu or other platforms, use paramiko

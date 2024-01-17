@@ -239,6 +239,20 @@
             }
         }
 
+        @media (max-width: 767px) {
+            /* Styles for screens smaller than 767px (e.g., phones) */
+            #triggerButton {
+                margin-right: 2px; /* Adjust the margin as needed */
+            }
+        }
+    
+        @media (min-width: 768px) {
+            /* Styles for screens 768px and larger (e.g., desktops) */
+            #triggerButton {
+                margin-right: -900px; /* Adjust the margin as needed */
+            }
+        }
+
         #chart-container {
             width: 300px;
             height: 200px;
@@ -296,8 +310,8 @@
                     <div class="cards">
                         <div class="card">
                             <div class="box">
-                                <h7>{{ count_devices }}</h7>
-                                <h4>Number of Devices</h4>
+                                <h5 style="color: black;">{{ count_devices }}</h5>
+                                <h4>Total Device</h4>
                             </div>
                             <div class="icon-case">
                             </div>
@@ -305,7 +319,7 @@
                         <div class="card">
                             <div class="box">
                                 <h5>{{ up_devices_count }}</h5>
-                                <h4>Active Devices</h4>
+                                <h4>Active</h4>
                             </div>
                             <div class="icon-case">
                             </div>
@@ -313,7 +327,7 @@
                         <div class="card">
                             <div class="box">
                                 <h6>{{ down_devices_count }}</h6>
-                                <h4>Devices Down</h4>
+                                <h4>Down</h4>
                             </div>
                             <div class="icon-case">
                             </div>
@@ -327,45 +341,48 @@
                         <div class="recent-payments p-8 rounded-lg shadow-lg bg-gradient-to-b from-blue-800 via-blue-1000  text-blue">
                             <div class="title flex items-center justify-between mb-4">
                                 <h2 class="text-2xl font-semibold">Device Lists</h2>
-                                <button id="triggerButton" class="btn btn-primary" onclick="showTriggerOptions()" onmouseover="startTimer()" style="margin-right: -900px;" onmouseout="clearTimer()">Trigger</button>
+                                <button id="triggerButton" class="btn btn-primary" onclick="showTriggerOptions()" onmouseover="startTimer()" onmouseout="clearTimer()">Trigger</button>
                                 <a href="{{ url_for('refresh') }}" class="ml-4">
                                     <img src="static/refresh.png" alt="Refresh" class="w-6 h-6">
                                 </a>
+
                             </div>
-                            <table class="table w-full bg-white shadow-md rounded-md overflow-hidden">
-                                <thead class="bg-blue-500 text-white">
-                                    <tr>
-                                        <th class="py-2 px-4">Tags</th>
-                                        <th class="py-2 px-4">Devices</th>
-                                        <th class="py-2 px-4">MAC Address</th>
-                                        <th class="py-2 px-4">Status</th>
-                                        <th class="py-2 px-4">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for field in fields_data %}
-                                    <tr>
-                                        <td class="font-semibold py-2 px-4">{{ field.tags }}</td>
-                                        <td class="py-2 px-4">{{ field.ip }}</td>
-                                        <td class="py-2 px-4">{{ field.mac }}</td>
-                                        <td class="py-2 px-4">
-                                            {% if field.status == 'UP' %}
-                                            <span class="badge badge-success bg-green-500 text-white p-1 rounded">{{ field.status }}</span>
-                                            {% elif field.status == 'DOWN' %}
-                                            <span class="badge badge-danger bg-red-500 text-white p-1 rounded">{{ field.status }}</span>
-                                            {% else %}
-                                            <span class="badge badge-warning bg-yellow-500 text-black p-1 rounded">NULL</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="py-2 px-4">
-                                            <form action="{{ url_for('connect_page', tag=field.tags) }}" method="get" target="_blank">
-                                                <button type="submit" class="btn btn-primary">Dive-in</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            <div class="table-responsive">
+                                <table class="table w-full bg-white shadow-md rounded-md overflow-hidden">
+                                    <thead class="bg-blue-500 text-white">
+                                        <tr>
+                                            <th class="py-2 px-4">Tags</th>
+                                            <th class="py-2 px-4">Devices</th>
+                                            <th class="py-2 px-4">MAC Address</th>
+                                            <th class="py-2 px-4">Status</th>
+                                            <th class="py-2 px-4">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for field in fields_data %}
+                                        <tr>
+                                            <td class="font-semibold py-2 px-4">{{ field.tags }}</td>
+                                            <td class="py-2 px-4">{{ field.ip }}</td>
+                                            <td class="py-2 px-4">{{ field.mac }}</td>
+                                            <td class="py-2 px-4">
+                                                {% if field.status == 'UP' %}
+                                                <span class="badge badge-success bg-green-500 text-white p-1 rounded">{{ field.status }}</span>
+                                                {% elif field.status == 'DOWN' %}
+                                                <span class="badge badge-danger bg-red-500 text-white p-1 rounded">{{ field.status }}</span>
+                                                {% else %}
+                                                <span class="badge badge-warning bg-yellow-500 text-black p-1 rounded">NULL</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="py-2 px-4">
+                                                <form action="{{ url_for('connect_page', tag=field.tags) }}" method="get" target="_blank">
+                                                    <button type="submit" class="btn btn-primary">Dive-in</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>                    
                 </div>
