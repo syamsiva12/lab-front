@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 import subprocess, platform
+import eventlet
 import paramiko
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
@@ -267,31 +268,62 @@ def refresh():
 # Handle SSH
 @app.route('/simulated_terminal/<tag>')
 def simulated_terminal(tag):
-    Base = declarative_base()
-    class Field(Base):
-        __tablename__ = 'field'
-        id = Column(Integer, primary_key=True)
-        tags = Column(String)
-        ip = Column(String)
-        ip2 = Column(String)
-        ip3 = Column(String)
-        username = Column(String)
-        password = Column(String)
-    def sql_connect():
-        host = '192.168.109.137'
-        port = 3306
-        user = "root"
-        password = "password"
-        database = "DEVICE_TRACKER"
-        connection = mysql.connector.connect(
-        host=host,
-        port=port,
-        user=user,
-        password=password,
-        database=database
-        )
-        return connection
-    def get_ssh_credentials():
+    return render_template('terminal.html', tag=tag)
+
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+
+@socketio.on('start_ssh')
+def start_ssh(data):
+    tag = data['tag']
+    ip, ip2, ip3, username, password = get_ssh_credentials(tag)
+
+    for ip_address in [ip, ip2, ip3]:
+        try:
+            if platform.system().lower() == 'windows':
+                # For Windows, use plink for SSH connections
+                cmd_command = f'plink -ssh -l {username} -pw {password} -load plink_config.txt {ip_address}'
+                subprocess.run(['start', 'cmd', '/K', cmd_command], shell=True, check=True)
+            else:
+                # For Ubuntu or other platforms, use paramiko
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(ip_address, username=username, password=password)
+                ssh.close()
+
+            socketio.emit('ssh_connected', {'tag': tag}, namespace='/terminal')
+            return
+
+        except paramiko.AuthenticationException:
+            print(f"Failed to connect to {ip_address} with username {username} and password {password}. Authentication failed.")
+        except paramiko.SSHException as e:
+            print(f"Failed to connect to {ip_address}. {str(e)}")
+        except Exception as e:
+            print(f"Error connecting to {ip_address}: {str(e)}")
+
+    print(f"Unable to establish an SSH connection for tag {tag}")
+    socketio.emit('ssh_failed', {'tag': tag}, namespace='/terminal')
+    
+    def get_ssh_credentials(tag):
+        def sql_connect():
+            host = '192.168.109.137'
+            port = 3306
+            user = "root"
+            password = "password"
+            database = "DEVICE_TRACKER"
+            connection = mysql.connector.connect(
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            database=database
+            )
+            return connection
         connection = sql_connect()
         cursor = connection.cursor()
 
@@ -304,32 +336,7 @@ def simulated_terminal(tag):
         finally:
             cursor.close()
             connection.close()
-    ip, ip2, ip3, username, password = get_ssh_credentials()
 
-    for ip in [ip, ip2, ip3]:
-        try:
-            if platform.system().lower() == 'windows':
-                # For Windows, use plink for SSH connections
-                cmd_command = f'plink -batch  -ssh -l {username} -pw {password} -load plink_config.txt {ip}'
-                subprocess.run(['start', 'cmd', '/K', cmd_command], shell=True, check=True)
-            else:
-                # For Ubuntu or other platforms, use paramiko
-                ssh = paramiko.SSHClient()
-                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(ip, username=username, password=password)
-                ssh.close()
-
-            return redirect(url_for('connect_page', tag=tag))
-
-        except paramiko.AuthenticationException:
-            print(f"Failed to connect to {ip} with username {username} and password {password}. Authentication failed.")
-        except paramiko.SSHException as e:
-            print(f"Failed to connect to {ip}. {str(e)}")
-        except Exception as e:
-            print(f"Error connecting to {ip}: {str(e)}")
-
-    print(f"Unable to establish an SSH connection for tag {tag}")
-    return "Unable to establish an SSH connection", 500
 
 @app.route('/calculate_interval', methods=['POST'])
 def calculate_interval():
@@ -353,4 +360,4 @@ def calculate_interval():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000)

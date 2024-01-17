@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css" />
+</head>
+<body>
+  <div id="terminal"></div>
+  <input id="commandInput" type="text" placeholder="Enter a command" />
+  <button onclick="sendCommand()">Send Command</button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
+
+  <script>
+    const socket = io('/terminal');
+    const term = new Terminal();
+
+    term.open(document.getElementById('terminal'));
+    term.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m $ ');
+
+    socket.on('connect', () => {
+      console.log('Connected to server');
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from server');
+    });
+
+    socket.on('ssh_connected', (data) => {
+      console.log(`SSH connection established for tag: ${data.tag}`);
+      // Handle SSH connection established
+    });
+
+    socket.on('ssh_failed', (data) => {
+      console.log(`SSH connection failed for tag: ${data.tag}`);
+      // Handle SSH connection failed
+    });
+
+    socket.on('command_output', (data) => {
+      // Write the command output to the terminal
+      term.write(data.output);
+    });
+
+    function startSSH() {
+      socket.emit('start_ssh', { tag: '{{ tag }}' });
+    }
+
+    function sendCommand() { debugger
+      const commandInput = document.getElementById('commandInput');
+      const command = commandInput.value;
+      term.write(commandInput.value+ " ")
+      socket.emit('send_command', { tag: '{{ tag }}', command });
+      commandInput.value = ''; // Clear the input field after sending the command
+
+    }
+
+    // Call startSSH() or attach it to a button click event as needed
+    startSSH();
+  </script>
+</body>
+</html>
