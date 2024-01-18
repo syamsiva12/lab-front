@@ -15,14 +15,18 @@ from sqlalchemy.orm import sessionmaker
 import mysql.connector
 import json
 from croniter import croniter
+from datetime import datetime
 
 import requests
 
 import webbrowser
 
 app = Flask(__name__, template_folder='template')
-CORS(app)
+CORS(app, resources={r"/socket.io/*": {"origins": "http://localhost:8000"}})
 socketio = SocketIO(app)
+
+# Deafult Current Time 
+current_time = 0
 
 # Configuration for the first and second databases
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:password@192.168.109.137:3306/DEVICE_TRACKER'
@@ -42,7 +46,36 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'logins'
 
+# Class for run the command
+class SSHClient:
+    def __init__(self, hostname, username, password):
+        self.hostname = hostname
+        self.username = username
+        self.password = password
+        self.client = paramiko.SSHClient()
+    def connect(self):
+        try:
+            # Automatically add the server's host key
+            self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
+            # Connect to the target device
+            self.client.connect(self.hostname, username=self.username, password=self.password,timeout=2)
+            print(f"Connected to {self.hostname}")
+
+        except Exception as e:
+            print(f"Connection failed: {e}")
+    def run_execmcd(self, command):
+        try:
+            # Run the execmcd command
+            stdin, stdout, stderr = self.client.exec_command(command)
+
+            # Print the output
+            #print("Command Output:")
+            #print(stdout.read().decode('utf-8'))
+            return stdout.read().decode('utf-8')
+
+        except Exception as e:
+            print(f"Command execution failed: {e}")
 
 
 class User(db.Model, UserMixin):
@@ -99,6 +132,8 @@ def logout():
 @app.route('/')
 @login_required
 def index():
+    global current_time
+    print("global",current_time)
     try:
         # Read status data from the text file
         with open('data1.txt', 'r') as json_file:
@@ -138,7 +173,7 @@ def index():
         return render_template('dash.html', fields_data=fields_data, count_tags=count_tags,
                                count_devices=count_devices, up_devices_count=up_devices_count,
                                down_devices_count=down_devices_count,up_devices_percentage=up_devices_percentage,
-                               down_devices_percentage=down_devices_percentage)
+                               down_devices_percentage=down_devices_percentage,current_time=current_time)
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -211,6 +246,7 @@ def connect_page():
 
 @app.route('/receive_data', methods=['POST'])
 def receive_data():
+    global current_time
     try:
         data1 = request.json.get('ping_status')
         data2 = request.json.get('interface_status')
@@ -225,8 +261,10 @@ def receive_data():
         write_to_file('data1.txt', data1)
         write_to_file('data2.txt', data2)
         write_to_file('data3.txt', data3)
+        current_time = datetime.now().time()
+        current_time = current_time.strftime("%I:%M %p")
 
-        return "Data received and written to files successfully"
+        return render_template('dash.html',current_time=current_time)
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -270,17 +308,18 @@ def refresh():
 def simulated_terminal(tag):
     return render_template('terminal.html', tag=tag)
 
-@socketio.on('connect')
+@socketio.on('connect',namespace='/terminal')
 def handle_connect():
     print('Client connected')
 
-@socketio.on('disconnect')
+@socketio.on('disconnect',namespace='/terminal')
 def handle_disconnect():
     print('Client disconnected')
 
-@socketio.on('start_ssh')
+@socketio.on('start_ssh',namespace='/terminal')
 def start_ssh(data):
     tag = data['tag']
+    print("tage is----------------", tag)
     ip, ip2, ip3, username, password = get_ssh_credentials(tag)
 
     for ip_address in [ip, ip2, ip3]:
@@ -309,59 +348,53 @@ def start_ssh(data):
     print(f"Unable to establish an SSH connection for tag {tag}")
     socketio.emit('ssh_failed', {'tag': tag}, namespace='/terminal')
     
-    def get_ssh_credentials(tag):
-        def sql_connect():
-            host = '192.168.109.137'
-            port = 3306
-            user = "root"
-            password = "password"
-            database = "DEVICE_TRACKER"
-            connection = mysql.connector.connect(
+@socketio.on('send_command', namespace='/terminal')
+def handle_send_command(data):
+    tag = data['tag']
+    command = data['command']
+    ip, ip2, ip3, username, password = get_ssh_credentials(tag)
+    for ip_address in [ip, ip2, ip3]:
+        try:
+            connection = SSHClient(ip_address,username,password)
+            connection.connect()
+            out_put = connection.run_execmcd(command)
+            break
+        except:
+            pass    
+        
+    print(f"Received command '{out_put}' for tag {tag}")
+    socketio.emit('terminal-output', {'output': out_put},namespace='/terminal')
+
+
+def get_ssh_credentials(tag):
+    def sql_connect():
+        host = '192.168.109.137'
+        port = 3306
+        user = "root"
+        password = "password"
+        database = "DEVICE_TRACKER"
+        connection = mysql.connector.connect(
             host=host,
             port=port,
             user=user,
             password=password,
             database=database
-            )
-            return connection
-        connection = sql_connect()
-        cursor = connection.cursor()
+        )
+        return connection
 
-        try:
-            # Retrieve IP, username, and password from the 'field' table
-            cursor.execute(r"SELECT ip, ip2, ip3, username, password FROM field WHERE tags = %s", (tag,))
-            result = cursor.fetchone()
+    connection = sql_connect()
+    cursor = connection.cursor()
 
-            return result if result else (None, None, None, None, None)
-        finally:
-            cursor.close()
-            connection.close()
+    try:
+        # Retrieve IP, username, and password from the 'field' table
+        cursor.execute(r"SELECT ip, ip2, ip3, username, password FROM field WHERE tags = %s", (tag,))
+        result = cursor.fetchone()
 
-    for ip in [ip, ip2, ip3]:
-        try:
-            if platform.system().lower() == 'windows':
-                # For Windows, use plink for SSH connections
-                cmd_command = f'plink   -ssh -l {username} -pw {password} -load plink_config.txt {ip}'
-                subprocess.run(['start', 'cmd', '/K', cmd_command], shell=True, check=True)
-            else:
-                # For Ubuntu or other platforms, use paramiko
-                ssh = paramiko.SSHClient()
-                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(ip, username=username, password=password)
-                ssh.close()
-
-            return redirect(url_for('connect_page', tag=tag))
-
-        except paramiko.AuthenticationException:
-            print(f"Failed to connect to {ip} with username {username} and password {password}. Authentication failed.")
-        except paramiko.SSHException as e:
-            print(f"Failed to connect to {ip}. {str(e)}")
-        except Exception as e:
-            print(f"Error connecting to {ip}: {str(e)}")
-
-    print(f"Unable to establish an SSH connection for tag {tag}")
-    return "Unable to establish an SSH connection", 500
-
+        return result if result else (None, None, None, None, None)
+    finally:
+        cursor.close()
+        connection.close()
+            
 @app.route('/calculate_interval', methods=['POST'])
 def calculate_interval():
     try:
@@ -379,9 +412,6 @@ def calculate_interval():
         print(f"Failed to convert to interval {e}")
         return None
         
-        
-        
-
-
 if __name__ == '__main__':
     socketio.run(app, debug=True, host='0.0.0.0', port=5000)
+

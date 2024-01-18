@@ -249,7 +249,7 @@
         @media (min-width: 768px) {
             /* Styles for screens 768px and larger (e.g., desktops) */
             #triggerButton {
-                margin-right: -900px; /* Adjust the margin as needed */
+                margin-right: -300px; /* Adjust the margin as needed */
             }
         }
 
@@ -295,7 +295,7 @@
                         <h1 class="text-2xl font-semibold">LAB MANAGER</h1>
                         <div class="user flex items-center space-x-4">
                             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addFieldsModal">
-                                &plus; Add Field</button>
+                                &plus; Add Devices</button>
                                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#importFileModal">
                                     Import File
                                 </button>
@@ -341,6 +341,7 @@
                         <div class="recent-payments p-8 rounded-lg shadow-lg bg-gradient-to-b from-blue-800 via-blue-1000  text-blue">
                             <div class="title flex items-center justify-between mb-4">
                                 <h2 class="text-2xl font-semibold">Device Lists</h2>
+                                <a style="text-align: right;">Last Trigger Response: {{ current_time }}</a>
                                 <button id="triggerButton" class="btn btn-primary" onclick="showTriggerOptions()" onmouseover="startTimer()" onmouseout="clearTimer()">Trigger</button>
                                 <a href="{{ url_for('refresh') }}" class="ml-4">
                                     <img src="static/refresh.png" alt="Refresh" class="w-6 h-6">
