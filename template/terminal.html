@@ -26,17 +26,20 @@
     const tag = '{{ tag }}';
 
     term.open(document.getElementById('terminal'));
-    term.write('Welcome to \x1B[1;3;31mSSH Terminal\x1B[0m\n$ ');
-
+    term.write('Welcome to \x1B[1;3;31mSSH Terminal\x1B[0m\n');
+    term.writeln(formatLine('\n'));
+    term.write('$')
     socket.on('ssh_connected', (data) => {
       term.clear();
       term.writeln(`\x1b[32mSSH connection established for Device: ${data.tag}\x1b[0m`);
+      term.writeln(formatLine('\n'));
       term.write('$ ');
   });
   
   socket.on('ssh_failed', (data) => {
       term.clear();
       term.writeln(`\x1b[1;31mSSH connection failed for Device: ${data.tag}\x1b[0m`);
+      term.writeln(formatLine('\n'));
       term.write('$ ');
   });
   
@@ -54,6 +57,7 @@
   
   socket.on('terminal-output', (data) => {
     const lines = data.output.split('\n');
+    term.writeln(formatLine('\n'));
     for (const line of lines) {
         term.writeln(formatLine(line));
     }
@@ -76,13 +80,18 @@
     // Optional: You can add additional initialization commands here if needed
 }
 
-    function sendCommand() {
-      const commandInput = document.getElementById('commandInput');
-      const command = commandInput.value;
-      term.write(`\n$ ${command} \n`); // Display the entered command in the terminal
-      socket.emit('send_command', { tag, command });
-      commandInput.value = ''; // Clear the input field after sending the command
-    }
+function sendCommand() {
+  const commandInput = document.getElementById('commandInput');
+  const command = commandInput.value;
+
+  // Ensure the command ends with a newline character
+  const formattedCommand = command.endsWith('\n') ? command : command + '\n';
+
+  term.write(` ${command}`); // Display the entered command in the terminal
+  socket.emit('send_command', { tag, command: formattedCommand });
+  commandInput.value = ''; // Clear the input field after sending the command
+}
+
   </script>
 </body>
 </html>
