@@ -1,3 +1,0 @@
-# Disable host key checking
-Host *
-    StrictHostKeyChecking no

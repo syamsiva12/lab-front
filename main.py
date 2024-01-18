@@ -319,33 +319,6 @@ def handle_disconnect():
 @socketio.on('start_ssh',namespace='/terminal')
 def start_ssh(data):
     tag = data['tag']
-    print("tage is----------------", tag)
-    ip, ip2, ip3, username, password = get_ssh_credentials(tag)
-
-    for ip_address in [ip, ip2, ip3]:
-        try:
-            if platform.system().lower() == 'windows':
-                # For Windows, use plink for SSH connections
-                cmd_command = f'plink -ssh -l {username} -pw {password} -load plink_config.txt {ip_address}'
-                subprocess.run(['start', 'cmd', '/K', cmd_command], shell=True, check=True)
-            else:
-                # For Ubuntu or other platforms, use paramiko
-                ssh = paramiko.SSHClient()
-                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(ip_address, username=username, password=password)
-                ssh.close()
-
-            socketio.emit('ssh_connected', {'tag': tag}, namespace='/terminal')
-            return
-
-        except paramiko.AuthenticationException:
-            print(f"Failed to connect to {ip_address} with username {username} and password {password}. Authentication failed.")
-        except paramiko.SSHException as e:
-            print(f"Failed to connect to {ip_address}. {str(e)}")
-        except Exception as e:
-            print(f"Error connecting to {ip_address}: {str(e)}")
-
-    print(f"Unable to establish an SSH connection for tag {tag}")
     socketio.emit('ssh_failed', {'tag': tag}, namespace='/terminal')
     
 @socketio.on('send_command', namespace='/terminal')
