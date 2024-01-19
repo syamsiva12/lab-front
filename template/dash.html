@@ -5,130 +5,574 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Manager - Admin Panel</title>
+    <script src="{{ url_for('static', filename='dash.js') }}"></script>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="./static/samp.css">
-    <title>Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Add any custom styles here */
+        .container-fluid {
+            padding: 0;
+        }
+
+        .side-menu {
+            background-color: #f8f9fa;
+            padding: 20px;
+            height: 100vh;
+            position: fixed;
+        }
+
+        .brand-name h1 {
+            position: fixed;
+            top: 20px; /* Adjusted for your layout */
+            left: 20px; /* Adjusted for your layout */
+            z-index: 1000; /* Adjusted for proper layering */
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+        }
+        
+
+        .search input {
+            margin-right: 10px;
+        }
+
+        .user button {
+            margin-right: 10px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+/*mo*/
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px; /* Adjust the gap as needed */
+        margin-top: 30px;
+        margin-bottom: 80px;
+    }
+
+    .card {
+        background: linear-gradient(to bottom right, #3730b3, #e4435e);
+        border-radius: 25px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease-in-out;
+        height: 160px;
+        width: 100%; /* Adjust the width to 100% */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+        .box {
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #ebeef1;
+            font-size: 2em;
+            margin: 0;
+        }
+        h2 {
+            color: #ebeef1;
+        }
+
+        h3 {
+            color: #555;
+            font-size: 1.2em;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        h4 {
+            color: #140e0e;
+            font-size: 1.2em;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        h7 {
+            color: #140e0e;
+            font-size: 1.2em;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 50px;
+        }
+
+        h5 {
+            color: #02f302;
+            font-size: 1.2em;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 50px;
+        }
+
+        h6 {
+            color: #fc0404;
+            font-size: 1.2em;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 50px;
+        }
+        
+        .form-group {
+            color: #000;
+        }
+        
+        .content-2 {
+            margin-top: 20px;
+        }
+
+        .title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .recent-payments {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }    
+
+        .btn {
+            padding: 10px 15px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            margin-left: 10px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 15px;
+            border: 1px solid #dddddd42;
+            text-align: left;
+        }
+
+        th {
+            background-color: #046bd8;
+            color: #ffffff;
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .badge-success {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .badge-danger {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .badge-warning {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        #loadingMessage {
+            display: none;
+            margin-top: 10px;
+            color: #007bff;
+        }
+
+             
+        .modal-content {
+            color: #030303;
+        }
+
+        @media (max-width: 768px) {
+            .cards {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px; /* Adjust the gap for smaller screens */
+            }
+        
+            .card {
+                width: 100%; /* Adjust the width to 100% for smaller screens */
+            }
+        }
+
+        @media (max-width: 767px) {
+            /* Styles for screens smaller than 767px (e.g., phones) */
+            #triggerButton {
+                margin-right: 2px; /* Adjust the margin as needed */
+            }
+        }
+    
+        @media (min-width: 768px) {
+            /* Styles for screens 768px and larger (e.g., desktops) */
+            #triggerButton {
+                margin-right: -300px; /* Adjust the margin as needed */
+            }
+        }
+
+        #chart-container {
+            width: 300px;
+            height: 200px;
+            position: relative;
+            border: 1px solid #ccc;
+            margin: 20px;
+        }
+
+        /* Style for the bars in the chart */
+        .bar {
+            width: 50px;
+            height: 100px;
+            background-color: #3498db;
+            position: absolute;
+            bottom: 0;
+            transition: height 0.5s;
+        }
+
+        /* Style for the labels */
+        .axis-label {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+    </style>
+
+
 </head>
 
-<body>
-    <div class="side-menu">
-        <div class="brand-name">
-            <h1>LAB MANAGER</h1>
-        </div>
-        <ul>
-            <li><img src="./responsive-admin-panel-pink-master/dashboard (2).png" alt="">&nbsp; <span>Dashboard</span>
-            </li>
-            <li><img src="./responsive-admin-panel-pink-master/reading-book (1).png" alt="">&nbsp;<span>User Management</span>
-            </li>
-        </ul>
-    </div>
-    <div class="container">
-        <div class="header">
-            <div class="nav">
-                <div class="search">
-                    <input type="text" placeholder="Search..">
-                    <button type="submit"><img src="./responsive-admin-panel-pink-master/search.png" alt=""></button>
-                </div>
-                <div class="user">
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addFieldsModal">
-                        &plus;
-                    </button>
+<body class="bg-gradient-to-b from-blue-600 to-blue-700 text-white">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Side Menu -->
 
-                    <!-- Button trigger modal for Import File -->
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#importFileModal">
-                        Import File
-                    </button>
+            <div class="col-md-12">
+                <!-- Header -->
+                <div class="header">
+                    <div class="nav bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white py-4 px-6 shadow-md">
+                        <h1 class="text-2xl font-semibold">LAB MANAGER</h1>
+                        <div class="user flex items-center space-x-4">
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addFieldsModal">
+                                &plus; Add Devices</button>
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#importFileModal">
+                                    Import File
+                                </button>
+                            <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Content Section -->
+            <div class="content">
+                <div>
+                    <!-- Stats Cards -->
+                    <div class="cards">
+                        <div class="card">
+                            <div class="box">
+                                <h5 style="color: black;">{{ count_devices }}</h5>
+                                <h4>Total Device</h4>
+                            </div>
+                            <div class="icon-case">
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="box">
+                                <h5>{{ up_devices_count }}</h5>
+                                <h4>Active</h4>
+                            </div>
+                            <div class="icon-case">
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="box">
+                                <h6>{{ down_devices_count }}</h6>
+                                <h4>Down</h4>
+                            </div>
+                            <div class="icon-case">
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
 
-                    <div class="logout-container ml-auto float-right">
-                        <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="content">
-            <div class="cards">
-                <div class="card">
-                    <div class="box">
-                        <h1>{{ count_tags }}</h1>
-                        <h3>Number of Tags </h3>
-                    </div>
-                    <div class="icon-case">
-                        <img src="./responsive-admin-panel-pink-master/students.png" alt="">
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="box">
-                        <h1>{{ count_devices }}</h1>
-                        <h3>Number of Devices </h3>
-                    </div>
-                    <div class="icon-case">
-                        <img src="./responsive-admin-panel-pink-master/teachers.png" alt="">
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="box">
-                        <h1>{{ up_devices_count }}</h1>
-                        <h3>No.of Devices are Active </h3>
-                    </div>
-                    <div class="icon-case">
-                        <img src="./responsive-admin-panel-pink-master/schools.png" alt="">
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="box">
-                        <h1>{{ down_devices_count }}</h1>
-                        <h3>No.of Devices are Down </h3>
-                    </div>
-                    <div class="icon-case">
-                        <img src="./responsive-admin-panel-pink-master/income.png" alt="">
-                    </div>
-                </div>
-            </div>
-            <div class="content-2">
-                <div class="recent-payments">
-                    <div class="title">
-                        <h2>Device Lists</h2>
-                        <a href="#" class="btn">View All</a>
-                    </div>
+                    <!-- Device List -->
+                    <div class="content-2 bg-gradient-to-b from-blue-700 to-blue-800 text-white">
+                        <div class="recent-payments p-8 rounded-lg shadow-lg bg-gradient-to-b from-blue-800 via-blue-1000  text-blue">
+                            <div class="title flex items-center justify-between mb-4">
+                                <h2 class="text-2xl font-semibold">Device Lists</h2>
+                                <a style="text-align: right;">Last Trigger Response: {{ current_time }}</a>
+                                <button id="triggerButton" class="btn btn-primary" onclick="showTriggerOptions()" onmouseover="startTimer()" onmouseout="clearTimer()">Trigger</button>
+                                <a href="{{ url_for('refresh') }}" class="ml-4">
+                                    <img src="static/refresh.png" alt="Refresh" class="w-6 h-6">
+                                </a>
 
-                    <table>
-                        <!-- Display Fields in a Table -->
-                        <thead>
-                            <tr>
-                                <th scope="col">Status</th>
-                                <th scope="col">Tags</th>
-                                <th scope="col">Devices</th>
-                                <th>Action</th>
-                                <!-- <th scope="col">Additional Info</th> New column for additional info -->
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for field in fields_data %}
-                            <tr>
-                                <td> {% if field.status == 'UP' %}
-                                    <span class="badge badge-success">{{ field.status }}</span>
-                                    {% else %}
-                                    <span class="badge badge-danger">{{ field.status }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ field.tags }}</td>
-                                <td>{{ field.ip }}</td>
-
-                                <td>
-                                    <form action="{{ url_for('connect_page')}}" method="get" target="_blank">
-                                        <button type="submit" class="btn btn-primary" data-toggle="modal">Dive-in</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table w-full bg-white shadow-md rounded-md overflow-hidden">
+                                    <thead class="bg-blue-500 text-white">
+                                        <tr>
+                                            <th class="py-2 px-4">Tags</th>
+                                            <th class="py-2 px-4">Devices</th>
+                                            <th class="py-2 px-4">MAC Address</th>
+                                            <th class="py-2 px-4">Status</th>
+                                            <th class="py-2 px-4">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for field in fields_data %}
+                                        <tr>
+                                            <td class="font-semibold py-2 px-4">{{ field.tags }}</td>
+                                            <td class="py-2 px-4">{{ field.ip }}</td>
+                                            <td class="py-2 px-4">{{ field.mac }}</td>
+                                            <td class="py-2 px-4">
+                                                {% if field.status == 'UP' %}
+                                                <span class="badge badge-success bg-green-500 text-white p-1 rounded">{{ field.status }}</span>
+                                                {% elif field.status == 'DOWN' %}
+                                                <span class="badge badge-danger bg-red-500 text-white p-1 rounded">{{ field.status }}</span>
+                                                {% else %}
+                                                <span class="badge badge-warning bg-yellow-500 text-black p-1 rounded">NULL</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="py-2 px-4">
+                                                <form action="{{ url_for('connect_page', tag=field.tags) }}" method="get" target="_blank">
+                                                    <button type="submit" class="btn btn-primary">Dive-in</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>                    
                 </div>
             </div>
         </div>
     </div>
+    <!-- Add this script at the end of your HTML body -->
+    <!-- Model For Trigger -->
+    
+    <script src="https://cdn.jsdelivr.net/npm/cronstrue@1.0.0/dist/cronstrue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cron-parser@4.9.0/lib/parser.min.js"></script>
+    <div id="timeTriggerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeTimeTriggerModal()">&times;</span>
+            <div class="modal-header">
+                <h3>Trigger Configuration </h3>
+            </div>
+            <div class="modal-body">
+                <!-- Block for setting Time-Based Trigger -->
+                <div id="timeBasedTriggerBlock">
+                    <label for="triggerTime">Enter the cron expression:</label>
+                    <input type="text" id="triggerTime" placeholder="e.g., * * * * *">
+                    <button onclick="scheduleTimeBasedTrigger()">Time-Based Trigger</button>
+                </div>
+                
+                <!-- Block for Manual Trigger -->
+                <div id="manualTriggerBlock">
+                    <button onclick="triggerCurlCommand()">Manual Trigger</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Check if the page has a pop-up message and show it
+        var errorMessage = '{{ get_flashed_messages(with_categories=true) | first | last }}';
+        if (errorMessage) {
+            alert(errorMessage);
+        }
+    });
+</script>
+
+<script>
+    function validateForm() {
+        // Your existing form validation logic
+    }
+
+    // Function to show trigger options
+    function showTriggerOptions() {
+        const modal = document.getElementById('timeTriggerModal');
+        modal.style.display = 'block';
+    }
+
+        // Function to close the time-based trigger modal
+    function closeTimeTriggerModal() {
+        const modal = document.getElementById('timeTriggerModal');
+        modal.style.display = 'none';
+    }
+
+    let intervalId;  // Global variable to store the interval ID
+    let isTriggerActive = true;
+    let interval;
+    
+    function scheduleTimeBasedTrigger() {
+        const cronExpression = document.getElementById('triggerTime').value;
+    
+        // Clear the previous interval, if any
+        clearInterval(intervalId);
+    
+        if (isValidCronExpression(cronExpression)) {
+            // Set up an interval to repeatedly trigger the command
+            intervalId = setInterval(() => {
+                fetch('/calculate_interval', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ cronExpression }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const interval = parseFloat(data.interval);  // Convert to float
+                    console.log(interval)
+                    if (!isNaN(interval)) {
+                        if (interval < 1) {
+                            // Execute the command immediately when the interval is less than 1 second
+                            triggerCurlCommandForSchedule();
+                        }
+                    } else {
+                        // Handle the case where the interval is NaN (e.g., error)
+                        window.alert("Time-Based Event is Disabled");
+                        stopInterval(); // Stop the interval
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Handle the case where an error occurred
+                    stopInterval(); // Stop the interval
+                });
+            }, 1000); // Adjust the interval as needed (1 second in this example)
+            
+            // Close the modal (if needed)
+            closeTimeTriggerModal();
+        } else {
+            alert('Please enter a valid cron expression.');
+        }
+    }
+    
+    // Function to stop the interval
+    function stopInterval() {
+        clearInterval(intervalId);
+    }
+
+    
+            
+    function isValidCronExpression(expression) {
+        // Basic regex pattern for cron expressions
+        const cronRegex = /^.+$/;
+
+        // Check if the expression matches the regex
+        return cronRegex.test(expression);
+    }
+
+    function closeTimeTriggerModal() {
+        const modal = document.getElementById('timeTriggerModal');
+        modal.style.display = 'none';
+    }
+
+    function triggerCurlCommand() {
+        const url = 'http://192.168.101.156:8000/start_trigger';
+        const curlParams = {
+            key: 'value',
+    };
+    
+        // Invoke the POST request using JavaScript fetch
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',  
+            },
+            body: JSON.stringify(curlParams),
+        })
+        .then(response => {
+            if (response.ok && response.status === 200) {
+                window.alert('TRIGGERED SUCCESSFULLY');
+            } else {
+                window.alert('ERROR WHILE POSTING');
+            }
+        })
+        .catch(error => {
+            console.error('Error sending POST request:', error);
+            window.alert('Error sending POST request: ' + error.message);
+        });
+    }
+
+    function triggerCurlCommandForSchedule() {
+        const url = 'http://192.168.101.156:8000/start_trigger';
+        const curlParams = {
+            key: 'value',
+    };
+    
+        // Invoke the POST request using JavaScript fetch
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',  // Corrected the typo here
+            },
+            body: JSON.stringify(curlParams),
+        })
+    }
+       
+    function toggleTrigger() {
+        const checkbox = document.getElementById('toggleTrigger');
+        isTriggerActive = checkbox.checked;
+    }
+
+</script>
+
+<script>
+    function routeToPage(tag) {
+        // Modify the form's action URL with the specific tag
+        document.getElementById("connectForm").action = "{{ url_for('connect_page', tag='') }}" + tag;
+        return true; // Continue with form submission
+    }
+</script>
 
     <!-- Add and Import Modals -->
     {% include 'add_import_modal.html' %}

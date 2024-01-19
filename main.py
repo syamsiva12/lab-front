@@ -1,13 +1,32 @@
-from flask import Flask, render_template, request, redirect, url_for , jsonify,flash
+from asyncio.windows_events import NULL
+import time
+from flask import Flask, render_template, request, redirect, url_for , jsonify,flash,session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
+from sqlalchemy.exc import IntegrityError
+from flask_cors import CORS
+from flask_socketio import SocketIO, emit
+import subprocess, platform
+import eventlet
+import paramiko
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+import mysql.connector
 import json
+from croniter import croniter
+from datetime import datetime
 
 import requests
 
 import webbrowser
 
 app = Flask(__name__, template_folder='template')
+CORS(app, resources={r"/socket.io/*": {"origins": "http://localhost:8000"}})
+socketio = SocketIO(app)
+
+# Deafult Current Time 
+current_time = 0
 
 # Configuration for the first and second databases
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:password@192.168.109.137:3306/DEVICE_TRACKER'
@@ -27,7 +46,36 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'logins'
 
+# Class for run the command
+class SSHClient:
+    def __init__(self, hostname, username, password):
+        self.hostname = hostname
+        self.username = username
+        self.password = password
+        self.client = paramiko.SSHClient()
+    def connect(self):
+        try:
+            # Automatically add the server's host key
+            self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
+            # Connect to the target device
+            self.client.connect(self.hostname, username=self.username, password=self.password,timeout=2)
+            print(f"Connected to {self.hostname}")
+
+        except Exception as e:
+            print(f"Connection failed: {e}")
+    def run_execmcd(self, command):
+        try:
+            # Run the execmcd command
+            stdin, stdout, stderr = self.client.exec_command(command)
+
+            # Print the output
+            #print("Command Output:")
+            #print(stdout.read().decode('utf-8'))
+            return stdout.read().decode('utf-8')
+
+        except Exception as e:
+            print(f"Command execution failed: {e}")
 
 
 class User(db.Model, UserMixin):
@@ -39,7 +87,7 @@ class User(db.Model, UserMixin):
 class Field(db.Model):
     id = db.Column(db.Integer, primary_key=True , autoincrement=True)
     ip = db.Column(db.String(15), unique=True, nullable=False)
-    tags = db.Column(db.String(50))
+    tags = db.Column(db.String(200), nullable=False)
     mac = db.Column(db.String(50), unique=True, nullable=False)
     username = db.Column(db.String(17))
     password = db.Column(db.String(50))
@@ -50,7 +98,7 @@ class DeviceInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ip = db.Column(db.String(15), unique=True, nullable=False)
     status = db.Column(db.String(20))
-    tags = db.Column(db.String(20))
+    tags = db.Column(db.String(20), nullable=False)
 
 # Creation of the database tables within the application context.
 with app.app_context():
@@ -84,6 +132,8 @@ def logout():
 @app.route('/')
 @login_required
 def index():
+    global current_time
+    print("global",current_time)
     try:
         # Read status data from the text file
         with open('data1.txt', 'r') as json_file:
@@ -102,9 +152,11 @@ def index():
                 if any(status == 'UP' for status in tag_data.values()):
                     field.status = 'UP'
                     up_devices_count += 1
-                else:
+                elif any(status == 'DOWN' for status in tag_data.values()):
                     field.status = 'DOWN'
                     down_devices_count += 1
+                else:
+                    field.status = 'UNRECOGNIZED'
 
         # Commit the changes to the database
         db.session.commit()
@@ -115,35 +167,38 @@ def index():
         # Calculate counts
         count_tags = len(fields_data)
         count_devices = len(fields_data)
+        up_devices_percentage = up_devices_count/count_devices
+        down_devices_percentage = down_devices_count/count_devices
 
         return render_template('dash.html', fields_data=fields_data, count_tags=count_tags,
                                count_devices=count_devices, up_devices_count=up_devices_count,
-                               down_devices_count=down_devices_count)
+                               down_devices_count=down_devices_count,up_devices_percentage=up_devices_percentage,
+                               down_devices_percentage=down_devices_percentage,current_time=current_time)
     except Exception as e:
         return f"Error: {str(e)}"
-
 
 # Route to handle adding a new field to the UI and the first database
 @app.route('/add_fields', methods=['POST'])
 def add_fields():
     ip_address = request.form.get('ip')
-    tags = request.form.get('tags')
+    tags_data = request.form.get('tags')
     mac = request.form.get('mac')
     username = request.form.get('username')
     password = request.form.get('password')
 
-    new_field = Field(ip=ip_address, tags=tags, mac=mac, username=username, password=password)
+    try:
+        new_field = Field(ip=ip_address, tags=tags_data, mac=mac, username=username, password=password)
 
-    # Add the new field to the first database
-    db.session.add(new_field)
-    db.session.commit()
+        # Add the new field to the first database
+        db.session.add(new_field)
+        db.session.commit()
 
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({'error': 'Duplicate MAC address'})
 
-    # Fetch all fields data after the addition
-    fields_data = Field.query.all()
-
-    return render_template('dash.html', fields_data=fields_data )
-
+    # Redirect to the index route after successfully adding a new field
+    return redirect(url_for('index'))
 
 @app.route('/import')
 def import_file():
@@ -191,6 +246,7 @@ def connect_page():
 
 @app.route('/receive_data', methods=['POST'])
 def receive_data():
+    global current_time
     try:
         data1 = request.json.get('ping_status')
         data2 = request.json.get('interface_status')
@@ -205,8 +261,10 @@ def receive_data():
         write_to_file('data1.txt', data1)
         write_to_file('data2.txt', data2)
         write_to_file('data3.txt', data3)
+        current_time = datetime.now().time()
+        current_time = current_time.strftime("%I:%M %p")
 
-        return "Data received and written to files successfully"
+        return render_template('dash.html',current_time=current_time)
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -221,23 +279,113 @@ def write_to_file(filename, data):
         print(f"Error writing to {filename}: {str(e)}")
 
 
-@app.route('/connect_page', methods=['GET'])
-def connect_page():
+@app.route('/connect_page/<tag>', methods=['GET', 'POST'])
+def connect_page(tag):
     if request.method == 'GET':
+        result_of_status = {}
         try:
+            device_tag = session.get('device_tag')
             with open('data1.txt', 'r') as file:
-                data1 = json.load(file)
+                data1 = json.load(file)               
             with open('data2.txt', 'r') as file:
                 data2 = json.load(file)
             with open('data3.txt', 'r') as file:
                 data3 = json.load(file)
 
-            return render_template('connect_page.html', data1=data1, data2=data2, data3=data3)
+            return render_template('connect_page.html',tag=tag, data1=data1[tag],data2=data2[tag],data3=data3[tag])
         except Exception as e:
             return f"Error: {str(e)}"
-    else:
-        return "Method Not Allowed"
+    elif request.method == 'POST':
+        session['device_tag'] = tag
+        return jsonify(result="Success", reload=True)
+                
+@app.route('/refresh', methods=['GET'])
+def refresh():
+    return redirect(url_for('index'))
 
+# Handle SSH
+@app.route('/simulated_terminal/<tag>')
+def simulated_terminal(tag):
+    return render_template('terminal.html', tag=tag)
+
+@socketio.on('connect',namespace='/terminal')
+def handle_connect():
+    print('Client connected')
+
+@socketio.on('disconnect',namespace='/terminal')
+def handle_disconnect():
+    print('Client disconnected')
+
+@socketio.on('start_ssh',namespace='/terminal')
+def start_ssh(data):
+    tag = data['tag']
+    socketio.emit('ssh_failed', {'tag': tag}, namespace='/terminal')
+    
+@socketio.on('send_command', namespace='/terminal')
+def handle_send_command(data):
+    tag = data['tag']
+    command = data['command']
+    ip, ip2, ip3, username, password = get_ssh_credentials(tag)
+    for ip_address in [ip, ip2, ip3]:
+        try:
+            connection = SSHClient(ip_address,username,password)
+            connection.connect()
+            out_put = connection.run_execmcd(command)
+            break
+        except:
+            pass    
+        
+    print(f"Received command '{out_put}' for tag {tag}")
+    socketio.emit('terminal-output', {'output': out_put},namespace='/terminal')
+
+
+def get_ssh_credentials(tag):
+    def sql_connect():
+        host = '192.168.109.137'
+        port = 3306
+        user = "root"
+        password = "password"
+        database = "DEVICE_TRACKER"
+        connection = mysql.connector.connect(
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            database=database
+        )
+        return connection
+
+    connection = sql_connect()
+    cursor = connection.cursor()
+
+    try:
+        # Retrieve IP, username, and password from the 'field' table
+        cursor.execute(r"SELECT ip, ip2, ip3, username, password FROM field WHERE tags = %s", (tag,))
+        result = cursor.fetchone()
+
+        return result if result else (None, None, None, None, None)
+    finally:
+        cursor.close()
+        connection.close()
+            
+@app.route('/calculate_interval', methods=['POST'])
+def calculate_interval():
+    try:
+        data = request.get_json()
+        cron_expression = data.get('cronExpression', '')
+        print(cron_expression)
+        if(cron_expression=='0 0 0 0 0'):
+            return jsonify({'interval': 'NaN'})
+        now = time.time()
+        next_occurrence = croniter(cron_expression, now).get_next()
+        interval = next_occurrence - now
+        print("Enterval time is ",interval)
+        return jsonify({'interval': interval})
+    except Exception as e:
+        print(f"Failed to convert to interval {e}")
+        return None
+        
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
-# This is main
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000)
+
+

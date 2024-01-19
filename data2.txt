@@ -1,20 +1,34 @@
 {
   "SAMPLE-DUT": {
-    "eth0": "yes",
-    "eth1": "yes"
+    "eth0": "UP",
+    "eth1": "UP"
   },
   "Sample-Dut-2": {
-    "eth0": "yes",
-    "eth1": "yes"
+    "eth0": "UP",
+    "eth1": "UP"
   },
   "LAN-DEVICE": {
-    "eth0": "yes",
-    "eth1": "yes",
-    "eth2": "yes"
+    "eth0": "UP",
+    "eth1": "UP",
+    "eth2": "UP"
   },
-  "HA-DUT": {
-    "eth0": "yes",
-    "eth1": "yes",
-    "eth2": "yes"
+  "E8K-Manu": {
+    "br1": "UP",
+    "br2": "UP",
+    "br4": "UP",
+    "br5": "UP",
+    "ge1": "UP",
+    "ge2": "DOWN",
+    "ge3": "DOWN",
+    "ge4": "DOWN",
+    "ge5": "UP",
+    "ge6": "DOWN",
+    "ge7": "UP",
+    "ge8": "DOWN",
+    "sfp9": "DOWN",
+    "sfp10": "DOWN"
+  },
+  "MSA_PC": {
+    "ens160": "UP"
   }
 }

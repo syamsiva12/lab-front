@@ -26,19 +26,9 @@ h3 {
     color: #999;
 }
 
-.btn {
-    background: #f05462;
-    color: white;
-    padding: 5px 10px;
-    text-align: center;
-}
 
-.btn:hover {
-    color: #f05462;
-    background: white;
-    padding: 3px 8px;
-    border: 2px solid #f05462;
-}
+
+
 
 .title {
     display: flex;
